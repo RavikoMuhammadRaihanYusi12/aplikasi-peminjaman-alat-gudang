@@ -16,15 +16,20 @@ type Config struct {
 	Version           bool
 	ImportTools       string
 	ImportTechnicians string
+	TursoURL          string
+	TursoToken        string
 }
 
 func Load() *Config {
+	port := getEnv("PORT", "8080")
 	cfg := &Config{
-		Addr:      getEnv("ADDR", "127.0.0.1:8080"),
+		Addr:      getEnv("ADDR", "0.0.0.0:"+port),
 		DBPath:    getEnv("DB_PATH", "data/gudang.db"),
 		BackupDir: getEnv("BACKUP_DIR", "backup"),
 		LogDir:    getEnv("LOG_DIR", "logs"),
 		TimeZone:  getEnv("TZ", "Asia/Jakarta"),
+		TursoURL:  getEnv("TURSO_DATABASE_URL", ""),
+		TursoToken: getEnv("TURSO_AUTH_TOKEN", ""),
 	}
 
 	flag.StringVar(&cfg.Addr, "addr", cfg.Addr, "HTTP listen address")

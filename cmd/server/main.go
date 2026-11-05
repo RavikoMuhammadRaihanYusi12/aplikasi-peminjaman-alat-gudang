@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"io"
@@ -41,9 +42,15 @@ func main() {
 	}
 
 	// 2. Buka Database
-	db, err := store.Open(cfg.DBPath)
+	var db *sql.DB
+	var err error
+	if cfg.TursoURL != "" {
+		db, err = store.OpenRemote(cfg.TursoURL, cfg.TursoToken)
+	} else {
+		db, err = store.Open(cfg.DBPath)
+	}
 	if err != nil {
-		slog.Error("Gagal membuka database SQLite", "err", err)
+		slog.Error("Gagal membuka database", "err", err)
 		os.Exit(1)
 	}
 	defer db.Close()
@@ -53,6 +60,9 @@ func main() {
 	if err != nil {
 		slog.Error("Gagal inisialisasi store", "err", err)
 		os.Exit(1)
+	}
+	if cfg.TursoURL != "" {
+		st.SetRemote(true)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -91,8 +101,12 @@ func main() {
 
 	// 8. Inisialisasi Backup Manager
 	backupMgr := backup.NewManager(db, cfg.BackupDir, 14)
-	if _, err := backupMgr.PerformBackup(ctx); err != nil {
-		slog.Warn("Backup awal gagal", "err", err)
+	if !st.IsRemote() {
+		if _, err := backupMgr.PerformBackup(ctx); err != nil {
+			slog.Warn("Backup awal gagal", "err", err)
+		}
+	} else {
+		slog.Info("Mode Turso (remote): backup file lokal dilewati")
 	}
 
 	// Ticker backup berkala tiap 24 jam
@@ -158,10 +172,14 @@ func main() {
 	}
 
 	// Backup terakhir sebelum keluar
-	lastBackupCtx, lastBackupCancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer lastBackupCancel()
-	if _, err := backupMgr.PerformBackup(lastBackupCtx); err != nil {
-		slog.Warn("Backup terakhir gagal", "err", err)
+	if !st.IsRemote() {
+		lastBackupCtx, lastBackupCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer lastBackupCancel()
+		if _, err := backupMgr.PerformBackup(lastBackupCtx); err != nil {
+			slog.Warn("Backup terakhir gagal", "err", err)
+		}
+	} else {
+		slog.Info("Mode Turso (remote): backup file lokal dilewati")
 	}
 
 	slog.Info("Aplikasi Alat Gudang telah selesai dengan aman.")
