@@ -1,0 +1,16 @@
+# Build output
+/dist/
+/alat-gudang.exe
+/server.exe
+*.exe
+
+# Runtime data — jangan commit database, backup, dan log
+/data/
+/backup/
+/logs/
+
+# Tooling
+/node_modules/
+npm-debug.log*
+.DS_Store
+Thumbs.db

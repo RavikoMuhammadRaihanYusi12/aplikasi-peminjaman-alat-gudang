@@ -1,0 +1,204 @@
+{{template "layout.html" .}}
+
+{{define "title"}}Pinjamkan Alat - Pos Gudang Sparepart{{end}}
+
+{{define "toast_content"}}{{template "toast.html" .}}{{end}}
+
+{{define "content"}}
+<div class="max-w-5xl mx-auto">
+  <!-- Top Banner / Back Link -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/" class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-bold text-lg p-1 rounded-lg focus:ring-2 focus:ring-slate-400">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Kembali ke Beranda
+      </a>
+      <h1 class="text-3xl font-black text-slate-900 mt-1">Form Peminjaman Alat</h1>
+    </div>
+    <span class="text-sm font-semibold text-slate-500 bg-white border border-slate-300 px-3 py-1.5 rounded-xl shadow-xs">
+      Nol mengetik &bull; Cukup klik nama & alat
+    </span>
+  </div>
+
+  <form id="form-pinjam" method="POST" action="/pinjam" class="space-y-8">
+    
+    <!-- STEP 1: SIAPA YANG MEMINJAM? -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border-2 border-slate-300 shadow-sm">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-slate-900 text-white font-black text-xl flex items-center justify-center">1</div>
+        <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tight">SIAPA YANG MEMINJAM?</h2>
+        <span class="text-sm font-bold text-slate-500 ml-auto">(Pilih 1 nama teknisi)</span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5" id="technician-grid">
+        {{range .Technicians}}
+          <label class="technician-card relative block p-4 rounded-2xl border-2 border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 cursor-pointer transition-all text-center select-none {{if not .Active}}opacity-40 pointer-events-none{{end}}">
+            <input type="radio" 
+                   name="technician_id" 
+                   value="{{.ID}}" 
+                   data-name="{{.Name}}" 
+                   data-section="{{.Section}}"
+                   class="sr-only peer" 
+                   required
+                   onchange="updateSummary()">
+            <div class="font-black text-xl text-slate-900 peer-checked:text-emerald-950">{{.Name}}</div>
+            {{if .Section}}
+              <div class="text-sm font-bold text-slate-500 peer-checked:text-emerald-800 mt-0.5">{{.Section}}</div>
+            {{end}}
+            <div class="absolute inset-0 rounded-2xl border-4 border-transparent peer-checked:border-emerald-600 peer-checked:bg-emerald-50/70 pointer-events-none transition-all shadow-xs"></div>
+          </label>
+        {{end}}
+      </div>
+    </div>
+
+    <!-- STEP 2: ALAT APA? -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border-2 border-slate-300 shadow-sm">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-slate-900 text-white font-black text-xl flex items-center justify-center">2</div>
+        <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tight">ALAT APA SAJA?</h2>
+        <span class="text-sm font-bold text-slate-500 ml-auto">(Boleh pilih lebih dari satu)</span>
+      </div>
+
+      <!-- Quick category filter chips -->
+      <div class="flex items-center gap-2 mb-4 overflow-x-auto pb-1" id="category-filter">
+        <button type="button" onclick="filterTools('all', this)" class="chip-filter active px-4 py-2 rounded-xl text-base font-bold bg-slate-900 text-white cursor-pointer">Semua Alat</button>
+        <button type="button" onclick="filterTools('Alat ukur', this)" class="chip-filter px-4 py-2 rounded-xl text-base font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">Alat Ukur</button>
+        <button type="button" onclick="filterTools('Alat listrik', this)" class="chip-filter px-4 py-2 rounded-xl text-base font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">Alat Listrik</button>
+        <button type="button" onclick="filterTools('Kunci khusus', this)" class="chip-filter px-4 py-2 rounded-xl text-base font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">Kunci Khusus</button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5" id="tools-grid">
+        {{range .Tools}}
+          {{$isLoanable := and (eq .Condition "baik") (eq .Status "tersedia")}}
+          <label class="tool-card relative block p-4 rounded-2xl border-2 transition-all select-none
+            {{if $isLoanable}}
+              border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 cursor-pointer
+            {{else}}
+              border-slate-200 bg-slate-100/80 cursor-not-allowed opacity-60
+            {{end}}"
+            data-category="{{.Category}}">
+            
+            <div class="flex items-start justify-between gap-2">
+              <span class="font-mono text-sm font-black px-2 py-0.5 rounded
+                {{if $isLoanable}}bg-slate-100 text-slate-800{{else}}bg-slate-200 text-slate-500{{end}}">
+                {{.Code}}
+              </span>
+
+              {{if eq .Condition "rusak"}}
+                <span class="text-xs font-black px-2 py-0.5 bg-rose-100 text-rose-800 rounded">RUSAK</span>
+              {{else if eq .Status "dipinjam"}}
+                <span class="text-xs font-black px-2 py-0.5 bg-amber-100 text-amber-900 rounded">DIPINJAM</span>
+              {{else}}
+                <span class="text-xs font-black px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded">TERSEDIA</span>
+              {{end}}
+            </div>
+
+            <div class="font-black text-xl text-slate-900 mt-2 leading-snug">{{.Name}}</div>
+
+            {{if not $isLoanable}}
+              <div class="text-xs font-bold text-slate-500 mt-2">
+                {{if eq .Condition "rusak"}}
+                  Tidak bisa dipinjam (sedang rusak)
+                {{else if .CurrentBorrower}}
+                  Sedang dibawa: <strong class="text-slate-800">{{.CurrentBorrower}}</strong>
+                {{end}}
+              </div>
+            {{else}}
+              <input type="checkbox" 
+                     name="tool_id" 
+                     value="{{.ID}}" 
+                     data-code="{{.Code}}"
+                     data-name="{{.Name}}"
+                     class="sr-only peer"
+                     {{if eq .ID $.PreToolID}}checked{{end}}
+                     onchange="updateSummary()">
+              <div class="text-xs font-bold text-slate-400 mt-2 peer-checked:text-emerald-700">
+                Klik untuk memilih
+              </div>
+              <div class="absolute inset-0 rounded-2xl border-4 border-transparent peer-checked:border-emerald-600 peer-checked:bg-emerald-50/60 pointer-events-none transition-all"></div>
+            {{end}}
+          </label>
+        {{end}}
+      </div>
+    </div>
+
+    <!-- STEP 3: RINGKASAN & SIMPAN -->
+    <div class="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border-4 border-slate-800 sticky bottom-4 z-20">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <div class="text-sm uppercase tracking-wider font-extrabold text-emerald-400">Ringkasan Peminjaman:</div>
+          <div class="text-2xl font-black text-white mt-1" id="summary-text">
+            Belum ada teknisi dan alat yang dipilih.
+          </div>
+          <div class="text-sm text-slate-400 mt-0.5" id="summary-hint">
+            Pilih 1 teknisi di atas, lalu centang minimal 1 alat.
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 w-full md:w-auto">
+          <a href="/" class="btn-secondary min-h-14 py-3 px-6 text-slate-800 bg-white border-none w-full md:w-auto text-center font-bold">
+            Batal
+          </a>
+          <button type="submit" 
+                  id="btn-submit-loan"
+                  disabled
+                  class="btn-primary min-h-14 py-4 px-8 text-xl font-black shadow-lg w-full md:w-auto flex items-center justify-center gap-3">
+            <svg class="w-6 h-6 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+            SIMPAN PEMINJAMAN
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  function updateSummary() {
+    const selectedTech = document.querySelector('input[name="technician_id"]:checked');
+    const selectedTools = Array.from(document.querySelectorAll('input[name="tool_id"]:checked'));
+    const btnSubmit = document.getElementById('btn-submit-loan');
+    const summaryText = document.getElementById('summary-text');
+    const summaryHint = document.getElementById('summary-hint');
+
+    if (selectedTech && selectedTools.length > 0) {
+      btnSubmit.removeAttribute('disabled');
+      const techName = selectedTech.getAttribute('data-name');
+      const toolNames = selectedTools.map(t => `${t.getAttribute('data-name')} (${t.getAttribute('data-code')})`).join(', ');
+      summaryText.innerHTML = `<span class="text-emerald-400">${techName}</span> meminjam <strong class="underline">${selectedTools.length} alat</strong>: ${toolNames}`;
+      summaryHint.textContent = 'Klik tombol hijau di sebelah kanan untuk menyimpan.';
+    } else if (selectedTech && selectedTools.length === 0) {
+      btnSubmit.setAttribute('disabled', 'true');
+      const techName = selectedTech.getAttribute('data-name');
+      summaryText.textContent = `${techName} meminjam... (sekarang pilih alatnya)`;
+      summaryHint.textContent = 'Centang minimal satu alat yang tersedia di langkah 2.';
+    } else {
+      btnSubmit.setAttribute('disabled', 'true');
+      summaryText.textContent = 'Belum ada teknisi dan alat yang dipilih.';
+      summaryHint.textContent = 'Pilih 1 teknisi di atas, lalu centang minimal 1 alat.';
+    }
+  }
+
+  function filterTools(category, btn) {
+    document.querySelectorAll('#category-filter .chip-filter').forEach(b => {
+      b.classList.remove('bg-slate-900', 'text-white');
+      b.classList.add('bg-slate-100', 'text-slate-700');
+    });
+    btn.classList.add('bg-slate-900', 'text-white');
+    btn.classList.remove('bg-slate-100', 'text-slate-700');
+
+    const cards = document.querySelectorAll('#tools-grid .tool-card');
+    cards.forEach(card => {
+      if (category === 'all' || card.getAttribute('data-category') === category) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  // Terapkan pilihan awal dari ?alat=ID (tombol "Pinjamkan" di daftar alat).
+  updateSummary();
+</script>
+{{end}}
+

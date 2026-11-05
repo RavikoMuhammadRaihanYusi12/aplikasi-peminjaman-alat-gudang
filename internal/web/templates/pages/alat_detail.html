@@ -1,0 +1,202 @@
+{{template "layout.html" .}}
+
+{{define "title"}}Detail {{.Tool.Name}} ({{.Tool.Code}}) - Pos Gudang Sparepart{{end}}
+
+{{define "content"}}
+<div class="max-w-6xl mx-auto space-y-6">
+  <!-- Back navigation -->
+  <div class="flex items-center justify-between">
+    <a href="/alat" class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-bold text-lg p-1 rounded-lg">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+      Kembali ke Daftar Alat
+    </a>
+  </div>
+
+  <!-- Tool Overview Card -->
+  <div class="bg-white rounded-3xl p-6 sm:p-8 border-2 border-slate-300 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+    <div class="space-y-2">
+      <div class="flex items-center gap-3 flex-wrap">
+        <span class="font-mono text-xl font-black px-3 py-1 bg-slate-900 text-white rounded-xl">
+          {{.Tool.Code}}
+        </span>
+        <h1 class="text-3xl sm:text-4xl font-black text-slate-900">{{.Tool.Name}}</h1>
+        
+        {{if eq .Tool.Condition "rusak"}}
+          <span class="badge-danger text-base px-3 py-1">Rusak</span>
+        {{else if eq .Tool.Status "dipinjam"}}
+          <span class="badge-info text-base px-3 py-1">Sedang Dipinjam</span>
+        {{else}}
+          <span class="badge-success text-base px-3 py-1">Tersedia di Gudang</span>
+        {{end}}
+      </div>
+
+      <div class="flex items-center gap-6 text-base text-slate-600 font-medium pt-1">
+        <span>Kategori: <strong class="text-slate-800">{{if .Tool.Category}}{{.Tool.Category}}{{else}}-{{end}}</strong></span>
+        <span>Batas Waktu: <strong class="text-slate-800">{{if .Tool.MaxHours}}{{.Tool.MaxHours}} Jam{{else}}24 Jam (Default){{end}}</strong></span>
+      </div>
+
+      {{if .Tool.ConditionNote}}
+        <div class="bg-rose-50 border border-rose-200 text-rose-900 px-4 py-2.5 rounded-xl font-semibold text-base mt-2">
+          Catatan Kerusakan: {{.Tool.ConditionNote}}
+        </div>
+      {{end}}
+    </div>
+
+    <!-- Quick Action -->
+    <div class="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+      {{if and (eq .Tool.Status "tersedia") (eq .Tool.Condition "baik")}}
+        <a href="/pinjam?alat={{.Tool.ID}}" class="btn-primary min-h-14 px-8 w-full md:w-auto">
+          ＋ Pinjamkan Alat Ini
+        </a>
+
+        <!-- P1: tandai rusak manual (alat ditemukan rusak setelah dikembalikan) -->
+        <details class="relative w-full md:w-auto">
+          <summary class="btn-secondary min-h-14 px-6 w-full md:w-auto cursor-pointer list-none text-center">
+            Tandai Rusak
+          </summary>
+          <form hx-post="/alat/{{.Tool.ID}}/rusak"
+                hx-swap="none"
+                hx-on::after-request="if(event.detail.successful) window.location.reload()"
+                class="absolute right-0 z-20 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white border-2 border-slate-300 rounded-2xl p-4 shadow-xl space-y-3 text-left">
+            <div class="text-base font-black text-slate-900">Tandai alat rusak</div>
+            <div>
+              <label class="block text-xs font-black text-slate-700 uppercase mb-1">Catatan cepat</label>
+              <select name="chip" class="w-full text-base px-3 py-2 font-semibold border-2 border-slate-300 rounded-xl focus:border-slate-800 outline-none bg-white">
+                <option value="">Pilih catatan (opsional)</option>
+                <option value="Tidak menyala">Tidak menyala</option>
+                <option value="Patah/aus">Patah/aus</option>
+                <option value="Aksesori hilang">Aksesori hilang</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-black text-slate-700 uppercase mb-1">Catatan tambahan</label>
+              <input type="text" name="catatan" maxlength="500" placeholder="Opsional, maks. 500 karakter"
+                     class="w-full text-base px-3 py-2 font-semibold border-2 border-slate-300 rounded-xl focus:border-slate-800 outline-none">
+            </div>
+            <button type="submit" class="btn-danger w-full min-h-12 font-black">Tandai Rusak</button>
+          </form>
+        </details>
+      {{else if eq .Tool.Condition "rusak"}}
+        <form hx-post="/alat/{{.Tool.ID}}/diperbaiki" hx-swap="none" hx-on::after-request="if(event.detail.successful) window.location.reload()" class="w-full md:w-auto">
+          <button type="submit" class="btn-primary min-h-14 px-8 w-full md:w-auto">
+            Sudah Diperbaiki
+          </button>
+        </form>
+      {{end}}
+    </div>
+  </div>
+
+  <!-- Highlight Box: Peminjam Terakhir -->
+  <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-3xl p-6 sm:p-8 shadow-md border-2 border-slate-700">
+    <div class="text-xs uppercase font-extrabold tracking-wider text-emerald-400 mb-1">Informasi Peminjam Terakhir:</div>
+    {{if .LastLoan}}
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2">
+        <div>
+          <div class="text-3xl font-black">{{.LastLoan.TechnicianName}}</div>
+          <div class="text-base text-slate-300 font-medium mt-1">
+            Bagian: <strong class="text-white">{{if .LastLoan.TechnicianSection}}{{.LastLoan.TechnicianSection}}{{else}}-{{end}}</strong> &bull;
+            Shift: <span class="uppercase font-bold">{{.LastLoan.BorrowShift}}</span>
+          </div>
+          <div class="text-sm text-slate-400 mt-1">
+            Dipinjam: {{.LastLoan.BorrowedAtFormatted}} &bull; 
+            {{if .LastLoan.ReturnedAtFormatted}}Dikembalikan: {{.LastLoan.ReturnedAtFormatted}}{{else}}<strong class="text-amber-400">Belum Dikembalikan</strong>{{end}}
+          </div>
+        </div>
+
+        {{if .LastLoan.ReturnCondition}}
+          <div class="sm:text-right">
+            <span class="text-xs uppercase font-bold text-slate-400 block mb-1">Kondisi saat kembali</span>
+            {{if eq .LastLoan.ReturnCondition "baik"}}
+              <span class="badge-success text-base px-3 py-1.5">Baik</span>
+            {{else}}
+              <span class="badge-danger text-base px-3 py-1.5">Ada Kerusakan</span>
+              {{if .LastLoan.ReturnNote}}
+                <div class="text-xs text-rose-300 font-medium mt-1">{{.LastLoan.ReturnNote}}</div>
+              {{end}}
+            {{end}}
+          </div>
+        {{end}}
+      </div>
+    {{else}}
+      <div class="text-xl font-bold text-slate-300 mt-2">Belum ada riwayat peminjaman untuk alat ini.</div>
+    {{end}}
+  </div>
+
+  <!-- Riwayat Peminjaman Lengkap -->
+  <div class="bg-white rounded-3xl border-2 border-slate-300 shadow-sm p-6 sm:p-8 space-y-4">
+    <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tight flex items-center justify-between">
+      Riwayat Peminjaman
+      <span class="text-sm font-semibold text-slate-500 lowercase">catatan permanen &bull; tidak dapat dihapus</span>
+    </h2>
+
+    {{if .History}}
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b-2 border-slate-200 text-slate-700 text-sm font-black uppercase">
+              <th class="py-3 px-4">Peminjam</th>
+              <th class="py-3 px-4">Waktu Pinjam</th>
+              <th class="py-3 px-4">Waktu Kembali</th>
+              <th class="py-3 px-4">Kondisi</th>
+              <th class="py-3 px-4">Catatan</th>
+              <th class="py-3 px-4 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 text-base">
+            {{range $idx, $item := .History}}
+              <tr class="hover:bg-slate-50">
+                <td class="py-4 px-4 font-bold text-slate-900">
+                  {{$item.TechnicianName}}
+                  {{if $item.TechnicianSection}}<div class="text-xs text-slate-500 font-medium">{{$item.TechnicianSection}}</div>{{end}}
+                </td>
+                <td class="py-4 px-4 text-slate-700">
+                  {{$item.BorrowedAtFormatted}}
+                  <span class="text-xs px-2 py-0.5 bg-slate-100 rounded text-slate-600 uppercase font-bold">{{$item.BorrowShift}}</span>
+                </td>
+                <td class="py-4 px-4 text-slate-700">
+                  {{if $item.ReturnedAtFormatted}}
+                    {{$item.ReturnedAtFormatted}}
+                    <span class="text-xs px-2 py-0.5 bg-slate-100 rounded text-slate-600 uppercase font-bold">{{$item.ReturnShift}}</span>
+                  {{else}}
+                    <span class="text-amber-800 font-bold text-sm bg-amber-50 px-2 py-0.5 rounded">Masih Dipinjam</span>
+                  {{end}}
+                </td>
+                <td class="py-4 px-4">
+                  {{if eq $item.ReturnCondition "baik"}}
+                    <span class="badge-success text-xs">Baik</span>
+                  {{else if eq $item.ReturnCondition "rusak"}}
+                    <span class="badge-danger text-xs">Rusak</span>
+                  {{else}}
+                    -
+                  {{end}}
+                </td>
+                <td class="py-4 px-4 text-slate-600 text-sm">
+                  {{if $item.ReturnNote}}{{$item.ReturnNote}}{{else}}-{{end}}
+                </td>
+                <td class="py-4 px-4 text-right">
+                  {{if eq $idx 0}}
+                    <!-- Pembatalan transaksi terakhir -->
+                    <form hx-post="/batal" hx-swap="none" hx-on::after-request="window.location.reload()" class="inline">
+                      <input type="hidden" name="loan_id" value="{{$item.ID}}">
+                      <input type="hidden" name="jenis" value="{{if $item.ReturnedAtFormatted}}kembali{{else}}pinjam{{end}}">
+                      <button type="submit" 
+                              onclick="return confirm('Batalkan transaksi terakhir ini?');"
+                              class="text-xs font-bold text-slate-600 hover:text-rose-700 bg-slate-100 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-slate-300 hover:border-rose-300 transition-colors cursor-pointer">
+                        Batalkan
+                      </button>
+                    </form>
+                  {{end}}
+                </td>
+              </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+    {{else}}
+      <p class="text-slate-500 font-medium py-4 text-center">Belum ada riwayat transaksi.</p>
+    {{end}}
+  </div>
+</div>
+{{end}}
+

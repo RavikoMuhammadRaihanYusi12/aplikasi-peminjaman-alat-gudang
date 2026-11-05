@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 18px; /* Base 18px as specified in PRD / System Design */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-slate-100 text-slate-900 font-sans min-h-screen select-none;
+  }
+
+  /* Prevent double click selection on quick-click buttons */
+  button, .btn {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+@layer components {
+  /* Big, tactile button components */
+  .btn-primary {
+    @apply min-h-14 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-lg rounded-xl shadow-md transition-colors flex items-center justify-center gap-3 cursor-pointer focus:outline-none focus:ring-4 focus:ring-emerald-300 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply min-h-14 px-6 py-3 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 font-semibold text-lg border-2 border-slate-300 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-3 cursor-pointer focus:outline-none focus:ring-4 focus:ring-slate-300;
+  }
+
+  .btn-danger {
+    @apply min-h-14 px-6 py-3 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold text-lg rounded-xl shadow-md transition-colors flex items-center justify-center gap-3 cursor-pointer focus:outline-none focus:ring-4 focus:ring-rose-300;
+  }
+
+  .btn-warn {
+    @apply min-h-14 px-6 py-3 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-900 font-bold text-lg rounded-xl shadow-md transition-colors flex items-center justify-center gap-3 cursor-pointer focus:outline-none focus:ring-4 focus:ring-amber-300;
+  }
+
+  .badge-warn {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded-lg font-bold text-sm uppercase tracking-wide;
+  }
+
+  .badge-danger {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 bg-rose-100 text-rose-900 border border-rose-300 rounded-lg font-bold text-sm uppercase tracking-wide;
+  }
+
+  .badge-info {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-900 border border-blue-300 rounded-lg font-bold text-sm uppercase tracking-wide;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-lg font-bold text-sm uppercase tracking-wide;
+  }
+
+  /* Chip filter/option */
+  .chip-option {
+    @apply px-4 py-3 rounded-xl border-2 border-slate-300 bg-white font-medium text-slate-700 hover:border-slate-500 hover:bg-slate-50 cursor-pointer transition-all flex items-center gap-2;
+  }
+  .chip-option.selected {
+    @apply border-emerald-600 bg-emerald-50 text-emerald-900 font-bold ring-2 ring-emerald-500;
+  }
+}
+

@@ -1,0 +1,63 @@
+{{if .Toast}}
+<div class="rounded-2xl p-5 mb-4 shadow-lg border-2 flex items-center justify-between gap-4 transition-all
+  {{if eq .Toast.Kind "success"}}bg-emerald-50 border-emerald-500 text-emerald-950
+  {{else if eq .Toast.Kind "warn"}}bg-amber-50 border-amber-500 text-amber-950
+  {{else}}bg-rose-50 border-rose-500 text-rose-950{{end}}">
+  
+  <div class="flex items-center gap-4">
+    <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white shrink-0
+      {{if eq .Toast.Kind "success"}}bg-emerald-600
+      {{else if eq .Toast.Kind "warn"}}bg-amber-600
+      {{else}}bg-rose-600{{end}}">
+      {{if eq .Toast.Kind "success"}}
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+        </svg>
+      {{else if eq .Toast.Kind "warn"}}
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+      {{else}}
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      {{end}}
+    </div>
+    
+    <div>
+      <div class="text-xl font-bold leading-tight">{{.Toast.Message}}</div>
+      {{if .Toast.Subtext}}
+        <div class="text-base text-slate-600 font-medium mt-0.5">{{.Toast.Subtext}}</div>
+      {{end}}
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3 shrink-0">
+    {{if .Toast.UndoLoanIDs}}
+      <form hx-post="/batal" hx-swap="none" class="inline">
+        {{range .Toast.UndoLoanIDs}}
+          <input type="hidden" name="loan_id" value="{{.}}">
+        {{end}}
+        <input type="hidden" name="jenis" value="{{.Toast.UndoKind}}">
+        <button type="submit" 
+                hx-disabled-elt="this"
+                class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black text-base rounded-xl shadow transition-colors flex items-center gap-2 cursor-pointer focus:ring-4 focus:ring-slate-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+          </svg>
+          Batalkan
+        </button>
+      </form>
+    {{end}}
+    
+    <button onclick="document.getElementById('toast').innerHTML = ''" 
+            class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition-colors cursor-pointer"
+            title="Tutup pesan">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+</div>
+{{end}}
+

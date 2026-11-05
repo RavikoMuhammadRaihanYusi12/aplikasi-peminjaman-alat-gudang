@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alat Gudang - Pos Gudang Sparepart (Frontend Preview)</title>
+  <link rel="stylesheet" href="../internal/web/static/app.css">
+  <style>
+    /* Smooth transitions and interactive states */
+    .fade-enter {
+      animation: fadeIn 0.15s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col">
+  <!-- Top Navigation Header -->
+  <header class="bg-white border-b-2 border-slate-300 shadow-sm sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <!-- Logo & Navigation Tabs -->
+        <div class="flex items-center gap-8">
+          <div onclick="switchView('beranda')" class="flex items-center gap-3 cursor-pointer group rounded-xl p-1">
+            <div class="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-inner">
+              AG
+            </div>
+            <div>
+              <div class="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+                ALAT GUDANG
+                <span class="text-xs px-2 py-0.5 bg-slate-200 text-slate-700 font-bold rounded-md">PREVIEW POS</span>
+              </div>
+              <div class="text-xs text-slate-500 font-semibold tracking-wide">Pencatatan Peminjaman Pos Gudang Sparepart</div>
+            </div>
+          </div>
+
+          <!-- Main Nav Links -->
+          <nav class="hidden md:flex items-center gap-2">
+            <button type="button" 
+                    id="nav-beranda"
+                    onclick="switchView('beranda')" 
+                    class="nav-tab px-5 py-3 rounded-xl font-bold text-lg transition-colors flex items-center gap-2 bg-slate-900 text-white shadow-sm cursor-pointer">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+              </svg>
+              Beranda
+            </button>
+            <button type="button" 
+                    id="nav-alat"
+                    onclick="switchView('alat')" 
+                    class="nav-tab px-5 py-3 rounded-xl font-bold text-lg transition-colors flex items-center gap-2 text-slate-700 hover:bg-slate-200 cursor-pointer">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+              </svg>
+              Semua Alat
+            </button>
+            <button type="button" 
+                    id="nav-kelola"
+                    onclick="switchView('kelola')" 
+                    class="nav-tab px-5 py-3 rounded-xl font-bold text-lg transition-colors flex items-center gap-2 text-slate-700 hover:bg-slate-200 cursor-pointer">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              Kelola
+            </button>
+          </nav>
+        </div>
+
+        <!-- Right Side: Clock & Main Action -->
+        <div class="flex items-center gap-4">
+          <!-- Live Shift Indicator -->
+          <div class="hidden xl:flex flex-col text-right pr-3 border-r-2 border-slate-200">
+            <span class="text-base font-bold text-slate-800" id="live-clock">--:-- WIB</span>
+            <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full inline-block mt-0.5" id="shift-badge">Shift Pagi</span>
+          </div>
+
+          <!-- Big Main Action Button -->
+          <button type="button" 
+                  onclick="switchView('pinjam')"
+                  class="btn-primary text-xl font-black py-4 px-7 shadow-lg shadow-emerald-700/20 active:scale-95 transition-transform flex items-center gap-3">
+            <svg class="w-7 h-7 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span>＋ PINJAMKAN ALAT</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-4 empty:hidden"></div>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+
+    <!-- ==================== VIEW 1: BERANDA ==================== -->
+    <div id="view-beranda" class="space-y-6 fade-enter">
+      <!-- 3 Stat Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <!-- Card 1: Dipinjam -->
+        <div class="bg-white rounded-2xl p-6 border-2 border-slate-300 shadow-sm flex items-center justify-between">
+          <div>
+            <div class="text-sm font-bold uppercase tracking-wider text-slate-500">SEDANG DIPINJAM</div>
+            <div class="text-5xl font-black text-slate-900 mt-1" id="stat-dipinjam">0</div>
+            <div class="text-xs text-slate-400 font-semibold mt-1">Alat berada di luar gudang</div>
+          </div>
+          <div class="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
+            <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Card 2: Perlu Dicek -->
+        <div id="card-perlu-dicek" class="bg-white rounded-2xl p-6 border-2 border-slate-300 shadow-sm flex items-center justify-between transition-all">
+          <div>
+            <div class="text-sm font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1.5">
+              <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+              PERLU DICEK
+            </div>
+            <div class="text-5xl font-black text-slate-900 mt-1" id="stat-perlu-dicek">0</div>
+            <div class="text-xs text-slate-500 font-semibold mt-1">&gt; 24 jam belum kembali</div>
+          </div>
+          <div class="w-16 h-16 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700">
+            <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Card 3: Rusak -->
+        <div id="card-rusak" class="bg-white rounded-2xl p-6 border-2 border-slate-300 shadow-sm flex items-center justify-between transition-all">
+          <div>
+            <div class="text-sm font-bold uppercase tracking-wider text-rose-800">ALAT RUSAK</div>
+            <div class="text-5xl font-black text-slate-900 mt-1" id="stat-rusak">0</div>
+            <div class="text-xs text-slate-500 font-semibold mt-1">Menunggu diperbaiki</div>
+          </div>
+          <div class="w-16 h-16 rounded-2xl bg-rose-100 border border-rose-300 flex items-center justify-center text-rose-700">
+            <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Input (Live Filter) -->
+      <div class="bg-white rounded-2xl p-4 border-2 border-slate-300 shadow-sm flex flex-col sm:flex-row items-center gap-4">
+        <div class="relative flex-1 w-full">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <input type="text" 
+                 id="search-beranda" 
+                 placeholder="Ketik sebagian kode/nama alat atau nama teknisi..." 
+                 oninput="renderBeranda()"
+                 class="w-full pl-12 pr-4 py-3.5 text-lg font-medium bg-slate-50 border-2 border-slate-200 rounded-xl focus:bg-white focus:border-slate-800 focus:ring-4 focus:ring-slate-200 outline-none transition-all">
+        </div>
+        <button type="button" 
+                onclick="document.getElementById('search-beranda').value=''; renderBeranda();"
+                class="px-5 py-3 text-base font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 rounded-xl transition-colors cursor-pointer shrink-0">
+          Reset Filter
+        </button>
+      </div>
+
+      <!-- SECTION 1: PERLU DICEK -->
+      <div id="section-perlu-dicek" class="space-y-3">
+        <div class="flex items-center gap-2 mb-1 px-1">
+          <span class="w-4 h-4 rounded-full bg-amber-500 inline-block animate-pulse"></span>
+          <h2 class="text-2xl font-black text-amber-950 uppercase tracking-tight flex items-center gap-2">
+            (!) PERLU DICEK
+            <span class="text-sm font-extrabold px-2.5 py-0.5 bg-amber-200 text-amber-900 rounded-lg" id="badge-perlu-dicek-count">0 Alat</span>
+          </h2>
+          <span class="text-sm text-amber-800 font-semibold ml-auto hidden sm:inline">Melewati batas waktu peminjaman</span>
+        </div>
+        <div id="list-perlu-dicek" class="space-y-3"></div>
+      </div>
+
+      <!-- SECTION 2: SEDANG DIPINJAM -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between mb-1 px-1">
+          <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
+            SEDANG DIPINJAM
+            <span class="text-sm font-extrabold px-2.5 py-0.5 bg-blue-100 text-blue-900 rounded-lg" id="badge-dipinjam-count">0 Alat</span>
+          </h2>
+          <span class="text-sm text-slate-500 font-semibold hidden sm:inline">Diurutkan dari pinjaman terlama</span>
+        </div>
+        <div id="list-dipinjam" class="space-y-3"></div>
+      </div>
+
+      <!-- SECTION 3: RUSAK -->
+      <div id="section-rusak" class="space-y-3">
+        <div class="flex items-center gap-2 mb-1 px-1">
+          <span class="w-4 h-4 rounded-full bg-rose-600 inline-block"></span>
+          <h2 class="text-2xl font-black text-rose-950 uppercase tracking-tight flex items-center gap-2">
+            ALAT RUSAK
+            <span class="text-sm font-extrabold px-2.5 py-0.5 bg-rose-200 text-rose-900 rounded-lg" id="badge-rusak-count">0 Alat</span>
+          </h2>
+          <span class="text-sm text-rose-800 font-semibold ml-auto hidden sm:inline">Perlu perbaikan sebelum bisa dipinjam</span>
+        </div>
+        <div id="list-rusak" class="space-y-3"></div>
+      </div>
+    </div>
+
+
+    <!-- ==================== VIEW 2: PINJAMKAN ALAT ==================== -->
+    <div id="view-pinjam" class="hidden max-w-5xl mx-auto space-y-8 fade-enter">
+      <div class="flex items-center justify-between">
+        <div>
+          <button type="button" onclick="switchView('beranda')" class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-bold text-lg p-1 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Kembali ke Beranda
+          </button>
+          <h1 class="text-3xl font-black text-slate-900 mt-1">Form Peminjaman Alat</h1>
+        </div>
+        <span class="text-sm font-semibold text-slate-500 bg-white border border-slate-300 px-3 py-1.5 rounded-xl shadow-xs">
+          Nol mengetik &bull; Cukup klik nama & alat
+        </span>
+      </div>
+
+      <!-- Step 1: Teknisi -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border-2 border-slate-300 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-slate-900 text-white font-black text-xl flex items-center justify-center">1</div>
+          <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tight">SIAPA YANG MEMINJAM?</h2>
+          <span class="text-sm font-bold text-slate-500 ml-auto">(Pilih 1 nama teknisi)</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5" id="pinjam-tech-grid"></div>
+      </div>
+
+      <!-- Step 2: Alat -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border-2 border-slate-300 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-slate-900 text-white font-black text-xl flex items-center justify-center">2</div>
+          <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tight">ALAT APA SAJA?</h2>
+          <span class="text-sm font-bold text-slate-500 ml-auto">(Boleh pilih lebih dari satu)</span>
+        </div>
+
+        <!-- Filter category buttons -->
+        <div class="flex items-center gap-2 mb-4 overflow-x-auto pb-1" id="pinjam-cat-filters">
+          <button type="button" onclick="filterPinjamCat('all', this)" class="pinjam-cat-btn active px-4 py-2 rounded-xl text-base font-bold bg-slate-900 text-white cursor-pointer">Semua Alat</button>
+          <button type="button" onclick="filterPinjamCat('Alat ukur', this)" class="pinjam-cat-btn px-4 py-2 rounded-xl text-base font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">Alat Ukur</button>
+          <button type="button" onclick="filterPinjamCat('Alat listrik', this)" class="pinjam-cat-btn px-4 py-2 rounded-xl text-base font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">Alat Listrik</button>
+          <button type="button" onclick="filterPinjamCat('Kunci khusus', this)" class="pinjam-cat-btn px-4 py-2 rounded-xl text-base font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">Kunci Khusus</button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5" id="pinjam-tools-grid"></div>
+      </div>
+
+      <!-- Step 3: Ringkasan & Submit -->
+      <div class="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border-4 border-slate-800 sticky bottom-4 z-20">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <div class="text-sm uppercase tracking-wider font-extrabold text-emerald-400">Ringkasan Peminjaman:</div>
+            <div class="text-2xl font-black text-white mt-1" id="pinjam-summary-text">Belum ada teknisi dan alat yang dipilih.</div>
+            <div class="text-sm text-slate-400 mt-0.5" id="pinjam-summary-hint">Pilih 1 teknisi di atas, lalu centang minimal 1 alat.</div>
+          </div>
+
+          <div class="flex items-center gap-4 w-full md:w-auto">
+            <button type="button" onclick="switchView('beranda')" class="btn-secondary min-h-14 py-3 px-6 text-slate-800 bg-white border-none w-full md:w-auto text-center font-bold">
+              Batal
+            </button>
+            <button type="button" 
+                    id="btn-confirm-pinjam"
+                    disabled
+                    onclick="submitPeminjaman()"
+                    class="btn-primary min-h-14 py-4 px-8 text-xl font-black shadow-lg w-full md:w-auto flex items-center justify-center gap-3">
+              <svg class="w-6 h-6 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+              SIMPAN PEMINJAMAN
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ==================== VIEW 3: SEMUA ALAT ==================== -->
+    <div id="view-alat" class="hidden space-y-6 fade-enter">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-black text-slate-900 tracking-tight">Daftar Semua Alat Gudang</h1>
+          <p class="text-base text-slate-600 font-medium mt-1">Total seluruh inventaris alat yang terdaftar di pos gudang sparepart.</p>
+        </div>
+        <button type="button" onclick="switchView('kelola', 'alat')" class="btn-secondary min-h-12 py-2 px-5 text-base font-bold flex items-center gap-2">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          Tambah Alat Baru
+        </button>
+      </div>
+
+      <!-- Filter toolbar -->
+      <div class="bg-white rounded-2xl p-4 border-2 border-slate-300 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1" id="semua-alat-status-filters">
+          <button type="button" onclick="filterSemuaAlatStatus('all', this)" class="sat-btn px-4 py-2.5 rounded-xl font-bold text-base bg-slate-900 text-white cursor-pointer">Semua</button>
+          <button type="button" onclick="filterSemuaAlatStatus('tersedia', this)" class="sat-btn px-4 py-2.5 rounded-xl font-bold text-base bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 cursor-pointer">Tersedia</button>
+          <button type="button" onclick="filterSemuaAlatStatus('dipinjam', this)" class="sat-btn px-4 py-2.5 rounded-xl font-bold text-base bg-blue-50 text-blue-800 border border-blue-300 hover:bg-blue-100 cursor-pointer">Dipinjam</button>
+          <button type="button" onclick="filterSemuaAlatStatus('rusak', this)" class="sat-btn px-4 py-2.5 rounded-xl font-bold text-base bg-rose-50 text-rose-800 border border-rose-300 hover:bg-rose-100 cursor-pointer">Rusak</button>
+        </div>
+
+        <div class="relative w-full md:w-80">
+          <input type="text" 
+                 id="search-semua-alat"
+                 placeholder="Cari kode atau nama alat..." 
+                 oninput="renderSemuaAlat()"
+                 class="w-full pl-10 pr-4 py-2.5 text-base font-medium border-2 border-slate-300 rounded-xl focus:border-slate-800 outline-none">
+          <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+      </div>
+
+      <!-- Table of Tools -->
+      <div class="bg-white rounded-3xl border-2 border-slate-300 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b-2 border-slate-200 text-slate-700 text-sm font-black uppercase tracking-wider">
+                <th class="py-4 px-6">Kode</th>
+                <th class="py-4 px-6">Nama Alat</th>
+                <th class="py-4 px-6">Kategori</th>
+                <th class="py-4 px-6">Batas Waktu</th>
+                <th class="py-4 px-6">Status / Pemegang</th>
+                <th class="py-4 px-6 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="semua-alat-tbody" class="divide-y divide-slate-200 text-base font-medium"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ==================== VIEW 4: DETAIL ALAT ==================== -->
+    <div id="view-detail" class="hidden max-w-6xl mx-auto space-y-6 fade-enter">
+      <div class="flex items-center justify-between">
+        <button type="button" onclick="switchView('alat')" class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-bold text-lg p-1 rounded-lg">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Kembali ke Daftar Alat
+        </button>
+      </div>
+
+      <div id="detail-card-container"></div>
+    </div>
+
+
+    <!-- ==================== VIEW 5: KELOLA ==================== -->
+    <div id="view-kelola" class="hidden max-w-6xl mx-auto space-y-6 fade-enter">
+      <div>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Kelola Master Data & Pengaturan</h1>
+        <p class="text-base text-slate-600 font-medium mt-1">Pengaturan alat, daftar teknisi pabrik, batas waktu, dan jam shift kerja pos gudang.</p>
+      </div>
+
+      <!-- Tab Buttons -->
+      <div class="flex items-center gap-3 border-b-2 border-slate-300 pb-3 overflow-x-auto">
+        <button type="button" onclick="switchKelolaTab('alat')" id="tab-btn-alat" class="px-6 py-3 rounded-2xl font-black text-lg transition-colors flex items-center gap-2 bg-slate-900 text-white shadow-sm cursor-pointer">
+          Kelola Alat
+        </button>
+        <button type="button" onclick="switchKelolaTab('teknisi')" id="tab-btn-teknisi" class="px-6 py-3 rounded-2xl font-black text-lg transition-colors flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-200 border border-slate-300 cursor-pointer">
+          Kelola Teknisi
+        </button>
+        <button type="button" onclick="switchKelolaTab('pengaturan')" id="tab-btn-pengaturan" class="px-6 py-3 rounded-2xl font-black text-lg transition-colors flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-200 border border-slate-300 cursor-pointer">
+          Pengaturan Sistem
+        </button>
+      </div>
+
+      <!-- Tab Content: Kelola Alat -->
+      <div id="kelola-tab-alat" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="bg-white rounded-3xl p-6 sm:p-7 border-2 border-slate-300 shadow-sm h-fit">
+          <h2 class="text-2xl font-black text-slate-900 mb-1">Tambah Alat Baru</h2>
+          <p class="text-sm text-slate-500 font-medium mb-5">Kode alat harus unik dan sesuai stiker fisik.</p>
+
+          <form onsubmit="tambahAlat(event)" class="space-y-4">
+            <div>
+              <label class="block text-sm font-black text-slate-800 uppercase mb-1">Kode Alat:</label>
+              <input type="text" id="input-tool-code" placeholder="Contoh: MM-05" required
+                     class="w-full text-lg px-4 py-3 font-mono font-bold uppercase border-2 border-slate-300 rounded-xl focus:border-slate-800 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-black text-slate-800 uppercase mb-1">Nama Alat:</label>
+              <input type="text" id="input-tool-name" placeholder="Contoh: Tang Kupas Kabel" required
+                     class="w-full text-lg px-4 py-3 font-bold border-2 border-slate-300 rounded-xl focus:border-slate-800 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-black text-slate-800 uppercase mb-1">Kategori:</label>
+              <select id="input-tool-cat" class="w-full text-lg px-4 py-3 font-semibold border-2 border-slate-300 rounded-xl focus:border-slate-800 outline-none bg-white">
+                <option value="Alat ukur">Alat ukur</option>
+                <option value="Alat listrik">Alat listrik</option>
+                <option value="Kunci khusus">Kunci khusus</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-black text-slate-800 uppercase mb-1">Batas Waktu (Jam):</label>
+              <input type="number" id="input-tool-hours" placeholder="Default: 24 jam"
+                     class="w-full text-lg px-4 py-3 font-semibold border-2 border-slate-300 rounded-xl focus:border-slate-800 outline-none">
+            </div>
+            <button type="submit" class="btn-primary w-full min-h-14 font-black text-lg mt-4 shadow-md">
+              Simpan Alat Baru
+            </button>
+          </form>
+        </div>
+
+        <div class="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-7 border-2 border-slate-300 shadow-sm space-y-4">
+          <h2 class="text-2xl font-black text-slate-900">Daftar Alat Gudang</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b-2 border-slate-200 text-slate-700 text-xs font-black uppercase">
+                  <th class="py-3 px-3">Kode</th>
+                  <th class="py-3 px-3">Nama</th>
+                  <th class="py-3 px-3">Kategori</th>
+                  <th class="py-3 px-3">Status</th>
+                  <th class="py-3 px-3 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="kelola-alat-tbody" class="divide-y divide-slate-200 text-base"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Kelola Teknisi -->
+      <div id="kelola-tab-teknisi" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="bg-white rounded-3xl p-6 sm:p-7 border-2 border-slate-300 shadow-sm h-fit">
+          <h2 class="text-2xl font-black text-slate-900 mb-1">Tambah Teknisi Baru</h2>
+          <p class="text-sm text-slate-500 font-medium mb-5">Akan muncul di kartu pilihan peminjaman.</p>
+
+          <form onsubmit="tambahTeknisi(event)" class="space-y-4">
+            <div>
+              <label class="block text-sm font-black text-slate-800 uppercase mb-1">Nama Teknisi:</label>
+              <input type="text" id="input-tech-name" placeholder="Contoh: Rian" required
+                     class="w-full text-lg px-4 py-3 font-bold border-2 border-slate-300 rounded-xl focus:border-slate-800 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-black text-slate-800 uppercase mb-1">Bagian / Divisi:</label>
+              <input type="text" id="input-tech-sec" placeholder="Contoh: Utilitas" required
+                     class="w-full text-lg px-4 py-3 font-bold border-2 border-slate-300 rounded-xl focus:border-slate-800 outline-none">
+            </div>
+            <button type="submit" class="btn-primary w-full min-h-14 font-black text-lg mt-4 shadow-md">
+              Simpan Teknisi
+            </button>
+          </form>
+        </div>
+
+        <div class="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-7 border-2 border-slate-300 shadow-sm space-y-4">
+          <h2 class="text-2xl font-black text-slate-900">Daftar Teknisi</h2>
+          <div id="kelola-teknisi-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Pengaturan -->
+      <div id="kelola-tab-pengaturan" class="hidden bg-white rounded-3xl p-6 sm:p-8 border-2 border-slate-300 shadow-sm max-w-3xl space-y-6">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900">Pengaturan Waktu & Shift</h2>
+          <p class="text-base text-slate-600 font-medium mt-1">Mengatur kapan alat ditandai "Perlu dicek" dan pergantian jam shift kerja pos gudang.</p>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-amber-50/60 border border-amber-200">
+          <label class="block text-base font-black text-amber-950 uppercase mb-1">Batas Waktu Default Peminjaman (Jam):</label>
+          <div class="flex items-center gap-3">
+            <input type="number" id="setting-max-hours" value="24" min="1" max="168" class="w-36 text-2xl font-black px-4 py-3 border-2 border-amber-300 rounded-xl outline-none bg-white">
+            <span class="text-lg font-bold text-slate-700">Jam (Default: 24 jam)</span>
+          </div>
+          <p class="text-xs text-amber-800 font-semibold mt-2">Bila melewati jam ini, alat otomatis naik ke bagian <strong>"(!) PERLU DICEK"</strong>.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+            <label class="block text-base font-bold text-slate-900 mb-1">Jam Mulai Shift Pagi:</label>
+            <input type="time" id="setting-shift-pagi" value="07:00" class="w-full text-xl font-bold px-4 py-3 border-2 border-slate-300 rounded-xl outline-none bg-white">
+            <span class="text-xs text-slate-500 font-semibold mt-1 block">Default: 07:00 WIB</span>
+          </div>
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+            <label class="block text-base font-bold text-slate-900 mb-1">Jam Mulai Shift Malam:</label>
+            <input type="time" id="setting-shift-malam" value="19:00" class="w-full text-xl font-bold px-4 py-3 border-2 border-slate-300 rounded-xl outline-none bg-white">
+            <span class="text-xs text-slate-500 font-semibold mt-1 block">Default: 19:00 WIB</span>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-200 flex justify-end">
+          <button type="button" onclick="simpanPengaturan()" class="btn-primary min-h-14 px-8 text-xl font-black">
+            Simpan Pengaturan
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal Dialog Container (Return confirmation) -->
+  <div id="modal-container" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="bg-white rounded-3xl shadow-2xl border-2 border-slate-300 max-w-xl w-full p-6 sm:p-8 overflow-hidden" id="modal-content"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-3 text-center text-sm text-slate-500 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
+      <span>Pos Komputer Gudang Sparepart &bull; Tanpa Internet &bull; Hanya Perlu Mouse</span>
+      <span class="font-mono text-xs text-slate-400">Versi 0.1 MVP Frontend</span>
+    </div>
+  </footer>
+
+  <!-- Mock Database & Client Logic Script -->
+  <script src="./preview-app.js"></script>
+</body>
+</html>
+

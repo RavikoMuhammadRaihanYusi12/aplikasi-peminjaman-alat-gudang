@@ -1,0 +1,7 @@
+<div id="beranda-live" 
+     hx-get="/fragmen/beranda" 
+     hx-include="#q" 
+     hx-trigger="every 30s [document.getElementById('dialog').childElementCount === 0], loan-changed from:body" 
+     hx-swap="innerHTML">
+  {{template "beranda_content.html" .}}
+</div>
